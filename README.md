@@ -9,7 +9,7 @@
 - Тёмная тема с glassmorphism и неоновыми акцентами
 - Система экранов (меню → игра → game over)
 - Сохранение прогресса в localStorage
-- GSAP для анимаций
+- CSS-анимации переходов между экранами
 - Мобильная адаптация
 - Инструкции для AI-ассистентов (CLAUDE.md, .cursor/rules)
 
@@ -65,6 +65,6 @@ python3 -m http.server 8000
 - Vanilla JavaScript (без фреймворков и сборщиков)
 - HTML5 Canvas
 - CSS3 (glassmorphism)
-- GSAP 3 + Draggable (CDN)
+- CSS transitions / Web Animations API (без зависимостей)
 - Google Fonts (Inter)
 - Yandex Games SDK v2

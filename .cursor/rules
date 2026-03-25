@@ -10,7 +10,7 @@
 - Vanilla JavaScript (ES5-совместимый, var/function, без let/const/arrow functions в глобальном скоупе)
 - HTML5 Canvas для рендеринга игрового поля
 - CSS3 с glassmorphism и neon-стилем
-- GSAP 3 + Draggable (CDN) для анимаций
+- CSS transitions / Web Animations API для анимаций (без зависимостей)
 - Google Fonts (Inter по умолчанию)
 - Yandex Games SDK v2
 

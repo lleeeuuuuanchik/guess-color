@@ -3,67 +3,366 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>Моя игра</title>
+	<title>Угадай цвет</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="styles.css">
 	<script src="https://yandex.ru/games/sdk/v2"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/Draggable.min.js"></script>
 </head>
 <body oncontextmenu="return false">
 	<div class="g-app" id="app">
 
-		<!-- Главное меню -->
+		<!-- Background Effects -->
+		<div class="bg-fx" aria-hidden="true">
+			<div class="bg-blob bg-blob--1"></div>
+			<div class="bg-blob bg-blob--2"></div>
+			<div class="bg-blob bg-blob--3"></div>
+			<div class="bg-blob bg-blob--4"></div>
+			<div class="bg-blob bg-blob--5"></div>
+		</div>
+
+		<!-- ========== Главное меню ========== -->
 		<div class="screen is-active" id="screen-menu">
 			<div class="menu">
-				<h1 class="menu__title" data-i18n="game.title">Моя игра</h1>
-				<p class="menu__subtitle" data-i18n="game.description">Описание игры</p>
-				<button class="btn btn--primary" id="btn-play" data-i18n="btn.play">Играть</button>
+				<div class="lang-switch" id="lang-switch">
+					<button class="lang-switch__btn is-active" data-lang="ru">RU</button>
+					<button class="lang-switch__btn" data-lang="en">EN</button>
+				</div>
+
+				<div class="menu__hero">
+					<div class="menu__orb-wrap">
+						<canvas class="menu__orb" id="menu-orb" width="96" height="96"></canvas>
+					</div>
+					<h1 class="menu__title" data-i18n="game.title">Угадай цвет</h1>
+				</div>
+
+				<div class="diff" id="difficulty-select">
+					<div class="diff__cards">
+						<button class="diff__card is-active" data-difficulty="easy">
+							<span class="diff__name" data-i18n="difficulty.easy">Лёгкий</span>
+							<span class="diff__desc" data-i18n="difficulty.easy.desc">7 сек, 3 попытки</span>
+						</button>
+						<button class="diff__card" data-difficulty="normal">
+							<span class="diff__name" data-i18n="difficulty.normal">Нормальный</span>
+							<span class="diff__desc" data-i18n="difficulty.normal.desc">5 сек, 1 попытка</span>
+						</button>
+						<button class="diff__card" data-difficulty="hard">
+							<span class="diff__name" data-i18n="difficulty.hard">Сложный</span>
+							<span class="diff__desc" data-i18n="difficulty.hard.desc">3 сек, 1 попытка</span>
+						</button>
+					</div>
+				</div>
+
+				<button class="btn btn--filled" id="btn-play" data-i18n="btn.play">Начать игру</button>
+				<button class="btn btn--text" id="btn-howto" data-i18n="howto.title">Как играть</button>
+				<button class="btn btn--text" id="btn-records" data-i18n="btn.records">Мои рекорды</button>
+				<button class="btn btn--text" id="btn-shop" data-i18n="shop.title">Магазин</button>
 			</div>
 		</div>
 
-		<!-- Игровой экран -->
+		<!-- ========== Игровой экран ========== -->
 		<div class="screen" id="screen-game">
-			<div class="game__header">
-				<div class="score">
-					<span class="score__label" data-i18n="score.label">Очки</span>
-					<span class="score__value" id="score">0</span>
+			<div class="game">
+				<!-- Хедер -->
+				<div class="game__top">
+					<div class="pill">
+						<span class="pill__val" id="score">0</span>
+						<span class="pill__label" data-i18n="score.label">очки</span>
+					</div>
+					<div class="pill">
+						<span class="pill__label" data-i18n="round.label">раунд</span>
+						<span class="pill__val" id="round">1</span>
+					</div>
+					<div class="pill pill--fire" id="streak-chip" style="display:none">
+						<span class="pill__val" id="streak-value">0</span>
+					</div>
+					<div class="game__top-right">
+						<button class="btn-ico" id="btn-sound" aria-label="Звук">&#128266;</button>
+						<button class="btn-ico" id="btn-pause" aria-label="Пауза">&#9208;</button>
+					</div>
 				</div>
-				<div class="game__controls">
-					<button class="btn btn--icon" id="btn-sound" aria-label="Звук" data-i18n="btn.sound" data-i18n-attr="aria-label">&#128266;</button>
-					<button class="btn btn--icon" id="btn-pause" aria-label="Пауза" data-i18n="btn.pause" data-i18n-attr="aria-label">&#9208;</button>
+
+				<!-- Таймер -->
+				<div class="timer">
+					<div class="timer__bar" id="timer-bar"></div>
+				</div>
+
+				<!-- Фаза -->
+				<p class="game__phase" id="phase-label" data-i18n="phase.memorize">Запомни этот цвет</p>
+
+				<!-- Плашки -->
+				<div class="swatches">
+					<div class="swatch-col">
+						<div class="swatch swatch--target" id="swatch-target">
+							<span class="swatch__q">?</span>
+						</div>
+						<span class="swatch__label" data-i18n="color.target">Цель</span>
+						<span class="swatch__hex" id="hex-target"></span>
+					</div>
+					<div class="swatch-col">
+						<div class="swatch swatch--guess" id="swatch-guess"></div>
+						<span class="swatch__label" data-i18n="color.yours">Твой цвет</span>
+						<span class="swatch__hex" id="hex-guess">#808080</span>
+					</div>
+				</div>
+
+				<!-- Цветовой пикер -->
+				<div class="picker" id="picker-wrap">
+					<div class="picker__area-wrap">
+						<canvas class="picker__area" id="picker-area" width="280" height="200"></canvas>
+						<div class="picker__cursor" id="picker-cursor"></div>
+					</div>
+					<div class="picker__hue-wrap">
+						<canvas class="picker__hue" id="picker-hue" width="280" height="20"></canvas>
+						<div class="picker__hue-cursor" id="picker-hue-cursor"></div>
+					</div>
+				</div>
+
+				<!-- Подсказка -->
+				<div class="hint-bar" id="hint-bar" style="display:none">
+					<div class="hint-bar__item" id="hint-r"><span>R</span><span id="hint-r-arrow"></span></div>
+					<div class="hint-bar__item" id="hint-g"><span>G</span><span id="hint-g-arrow"></span></div>
+					<div class="hint-bar__item" id="hint-b"><span>B</span><span id="hint-b-arrow"></span></div>
+				</div>
+
+				<!-- Кнопки -->
+				<div class="game__btns" id="game-actions">
+					<button class="btn btn--filled btn--check" id="btn-check" data-i18n="btn.check">Проверить</button>
+					<button class="btn btn--text btn--sm" id="btn-reset-sliders" data-i18n="btn.reset">Сбросить</button>
 				</div>
 			</div>
-			<canvas class="game__canvas" id="game-canvas" width="360" height="360"></canvas>
 		</div>
 
-		<!-- Экран паузы -->
+		<!-- ========== Результат раунда ========== -->
+		<div class="screen screen--overlay" id="screen-result">
+			<div class="card card--result">
+				<div class="result-swatches">
+					<div class="result-sw">
+						<div class="swatch swatch--mini" id="result-target"></div>
+						<span class="result-sw__hex" id="result-hex-target"></span>
+					</div>
+					<span class="result-swatches__arrow">&#8594;</span>
+					<div class="result-sw">
+						<div class="swatch swatch--mini" id="result-guess"></div>
+						<span class="result-sw__hex" id="result-hex-guess"></span>
+					</div>
+				</div>
+
+				<p class="result__emoji" id="result-emoji"></p>
+				<p class="result__pct"><span class="result__pct-num" id="result-match">0</span><span class="result__pct-sign">%</span></p>
+				<p class="result__word" id="result-word" data-i18n="result.match">совпадение</p>
+
+				<div class="result__channels" id="result-diffs"></div>
+
+				<div class="result__stats">
+					<div class="result__stat">
+						<span class="result__stat-val" id="result-points">0</span>
+						<span class="result__stat-label" data-i18n="result.points">очков</span>
+					</div>
+					<div class="result__stat" id="result-streak-wrap" style="display:none">
+						<span class="result__stat-val" id="result-streak">0</span>
+						<span class="result__stat-label" data-i18n="result.streak">серия</span>
+					</div>
+				</div>
+
+				<div class="rewards" id="rewards-wrap">
+					<button class="reward-btn" id="btn-rewarded-x2">
+						<span class="reward-btn__icon">&#215;2</span>
+						<span class="reward-btn__body">
+							<span data-i18n="rewarded.x2">Удвоить очки</span>
+							<span class="reward-btn__sub" data-i18n="rewarded.x2.desc">x2 за этот раунд</span>
+						</span>
+						<span class="reward-btn__ad">&#9654;</span>
+					</button>
+					<button class="reward-btn" id="btn-rewarded-retry" style="display:none">
+						<span class="reward-btn__icon">&#8634;</span>
+						<span class="reward-btn__body">
+							<span data-i18n="rewarded.retry">Ещё попытка</span>
+							<span class="reward-btn__sub" data-i18n="rewarded.retry.desc">Попробовать снова</span>
+						</span>
+						<span class="reward-btn__ad">&#9654;</span>
+					</button>
+					<button class="reward-btn" id="btn-rewarded-flash" style="display:none">
+						<span class="reward-btn__icon">&#9889;</span>
+						<span class="reward-btn__body">
+							<span data-i18n="rewarded.flash">Вспышка цвета</span>
+							<span class="reward-btn__sub" data-i18n="rewarded.flash.desc">Увидеть цвет на 1 сек</span>
+						</span>
+						<span class="reward-btn__ad">&#9654;</span>
+					</button>
+				</div>
+
+				<button class="btn btn--filled" id="btn-next" data-i18n="btn.next">Следующий раунд</button>
+			</div>
+		</div>
+
+		<!-- ========== Пауза ========== -->
 		<div class="screen screen--overlay" id="screen-pause">
-			<div class="modal">
-				<h2 class="modal__title" data-i18n="btn.pause">Пауза</h2>
-				<button class="btn btn--primary" id="btn-resume" data-i18n="btn.resume">Продолжить</button>
-				<button class="btn btn--secondary" id="btn-pause-menu" data-i18n="btn.menu">Меню</button>
+			<div class="card card--pause">
+				<div class="pause__icon">&#9208;</div>
+				<h2 class="card__title" data-i18n="btn.pause">Пауза</h2>
+				<div class="pause__stats">
+					<div class="pause__stat">
+						<span class="pause__stat-val" id="pause-score">0</span>
+						<span class="pause__stat-label" data-i18n="score.label">очки</span>
+					</div>
+					<div class="pause__divider"></div>
+					<div class="pause__stat">
+						<span class="pause__stat-val" id="pause-round">0</span>
+						<span class="pause__stat-label" data-i18n="round.label">раунд</span>
+					</div>
+					<div class="pause__divider"></div>
+					<div class="pause__stat">
+						<span class="pause__stat-val" id="pause-streak">0</span>
+						<span class="pause__stat-label" data-i18n="result.streak">серия</span>
+					</div>
+				</div>
+				<button class="btn btn--filled" id="btn-resume" data-i18n="btn.resume">Продолжить</button>
+				<button class="btn btn--text" id="btn-pause-menu" data-i18n="btn.menu">В меню</button>
 			</div>
 		</div>
 
-		<!-- Game Over -->
+		<!-- ========== Game Over ========== -->
 		<div class="screen" id="screen-gameover">
-			<div class="modal">
-				<h2 class="modal__title" data-i18n="game-over.title">Игра окончена</h2>
-				<p class="modal__score"><span data-i18n="score.result">Очки:</span> <span class="modal__score-value" id="final-score">0</span></p>
-				<button class="btn btn--primary" id="btn-restart" data-i18n="btn.restart">Заново</button>
-				<button class="btn btn--secondary" id="btn-menu" data-i18n="btn.menu">Меню</button>
+			<div class="card card--go">
+				<p class="card__emoji">&#127942;</p>
+				<h2 class="card__title" data-i18n="game-over.title">Результаты</h2>
+				<p class="card__sub" data-i18n="game-over.subtitle">Отличная игра!</p>
+				<div class="go-grid">
+					<div class="go-cell">
+						<span class="go-cell__val" id="final-score">0</span>
+						<span class="go-cell__label" data-i18n="score.result">Итого очков</span>
+					</div>
+					<div class="go-cell">
+						<span class="go-cell__val" id="final-rounds">0</span>
+						<span class="go-cell__label" data-i18n="gameover.rounds">Раундов</span>
+					</div>
+					<div class="go-cell">
+						<span class="go-cell__val" id="final-best-match">0%</span>
+						<span class="go-cell__label" data-i18n="gameover.bestMatch">Лучший %</span>
+					</div>
+					<div class="go-cell">
+						<span class="go-cell__val" id="final-streak">0</span>
+						<span class="go-cell__label" data-i18n="gameover.streak">Макс. серия</span>
+					</div>
+				</div>
+				<button class="btn btn--filled" id="btn-restart" data-i18n="btn.restart">Играть снова</button>
+				<button class="btn btn--text" id="btn-menu" data-i18n="btn.menu">В меню</button>
+			</div>
+		</div>
+
+		<!-- ========== Рекорды ========== -->
+		<div class="screen" id="screen-records">
+			<div class="card card--rec">
+				<p class="card__emoji">&#127941;</p>
+				<h2 class="card__title" data-i18n="records.title">Рекорды</h2>
+				<div class="rec-grid">
+					<div class="rec">
+						<span class="rec__val" id="rec-high-score">0</span>
+						<span class="rec__label" data-i18n="records.highScore">Лучший счёт</span>
+					</div>
+					<div class="rec">
+						<span class="rec__val" id="rec-best-match">0%</span>
+						<span class="rec__label" data-i18n="records.bestMatch">Лучшее совпадение</span>
+					</div>
+					<div class="rec">
+						<span class="rec__val" id="rec-best-streak">0</span>
+						<span class="rec__label" data-i18n="records.bestStreak">Лучшая серия</span>
+					</div>
+					<div class="rec">
+						<span class="rec__val" id="rec-games-played">0</span>
+						<span class="rec__label" data-i18n="records.gamesPlayed">Игр сыграно</span>
+					</div>
+					<div class="rec">
+						<span class="rec__val" id="rec-total-rounds">0</span>
+						<span class="rec__label" data-i18n="records.totalRounds">Раундов пройдено</span>
+					</div>
+					<div class="rec">
+						<span class="rec__val" id="rec-coins">0</span>
+						<span class="rec__label" data-i18n="records.coins">Монет заработано</span>
+					</div>
+				</div>
+				<button class="btn btn--text" id="btn-records-back" data-i18n="btn.back">Назад</button>
+			</div>
+		</div>
+
+		<!-- ========== Как играть ========== -->
+		<div class="screen" id="screen-howto">
+			<div class="card card--howto">
+				<h2 class="card__title" data-i18n="howto.title">Как играть</h2>
+				<div class="howto__steps">
+					<div class="howto__step">
+						<span class="howto__icon">&#128065;</span>
+						<div class="howto__text">
+							<span class="howto__label" data-i18n="howto.step1">Запомни</span>
+							<span class="howto__desc" data-i18n="howto.step1.desc">Тебе покажут цвет на несколько секунд — запомни его</span>
+						</div>
+					</div>
+					<div class="howto__step">
+						<span class="howto__icon">&#127912;</span>
+						<div class="howto__text">
+							<span class="howto__label" data-i18n="howto.step2">Воспроизведи</span>
+							<span class="howto__desc" data-i18n="howto.step2.desc">Подбери цвет на палитре как можно точнее</span>
+						</div>
+					</div>
+					<div class="howto__step">
+						<span class="howto__icon">&#127919;</span>
+						<div class="howto__text">
+							<span class="howto__label" data-i18n="howto.step3">Набирай очки</span>
+							<span class="howto__desc" data-i18n="howto.step3.desc">Чем точнее совпадение — тем больше очков</span>
+						</div>
+					</div>
+					<div class="howto__step">
+						<span class="howto__icon">&#128293;</span>
+						<div class="howto__text">
+							<span class="howto__label" data-i18n="howto.step4">Серия побед</span>
+							<span class="howto__desc" data-i18n="howto.step4.desc">90%+ подряд — бонусный множитель к очкам</span>
+						</div>
+					</div>
+				</div>
+				<div class="howto__goal">
+					<span class="howto__goal-icon">&#127942;</span>
+					<span class="howto__goal-text" data-i18n="howto.goal">Пройди все раунды и набери максимальный счёт!</span>
+				</div>
+				<div class="howto__rounds">
+					<div class="howto__round-item">
+						<span class="howto__round-val">10</span>
+						<span class="howto__round-diff" data-i18n="difficulty.easy">Лёгкий</span>
+					</div>
+					<div class="howto__round-item">
+						<span class="howto__round-val">15</span>
+						<span class="howto__round-diff" data-i18n="difficulty.normal">Нормальный</span>
+					</div>
+					<div class="howto__round-item">
+						<span class="howto__round-val">20</span>
+						<span class="howto__round-diff" data-i18n="difficulty.hard">Сложный</span>
+					</div>
+				</div>
+				<button class="btn btn--text" id="btn-howto-back" data-i18n="btn.back">Назад</button>
+			</div>
+		</div>
+
+		<!-- ========== Магазин ========== -->
+		<div class="screen" id="screen-shop">
+			<div class="card card--shop">
+				<h2 class="card__title" data-i18n="shop.title">Магазин</h2>
+				<div class="shop__balance">
+					<span class="shop__coin-icon">&#129689;</span>
+					<span class="shop__coin-val" id="shop-coins">0</span>
+				</div>
+				<p class="shop__section" data-i18n="shop.themes">Акцентные темы</p>
+				<div class="shop__grid" id="shop-grid"></div>
+				<button class="btn btn--text" id="btn-shop-back" data-i18n="btn.back">Назад</button>
 			</div>
 		</div>
 
 	</div>
 
-	<!-- Скрипты в порядке зависимостей -->
 	<script src="src/config.js"></script>
 	<script src="src/i18n.js"></script>
 	<script src="src/game.js"></script>
+	<script src="src/picker.js"></script>
 	<script src="src/render.js"></script>
 	<script src="src/progress.js"></script>
 	<script src="src/yandex-sdk.js"></script>

@@ -15,7 +15,7 @@
 - **Vanilla JavaScript** — без фреймворков, без TypeScript, без сборщиков (Webpack/Vite/etc.)
 - **HTML5 Canvas** — основной способ рендеринга игрового поля
 - **CSS** — стилизация UI-экранов (меню, магазин, настройки)
-- **GSAP + Draggable** (CDN) — анимации и drag-and-drop
+- **CSS transitions / Web Animations API** — анимации (без зависимостей)
 - **Google Fonts** — шрифты
 - **Нет npm/yarn/pnpm** — нет package.json, нет node_modules
 - **Нет тестов/линтеров/CI** — простая статическая структура
@@ -81,7 +81,7 @@ YandexSDK.showInterstitial(onClose);
 ### Экраны
 - Каждый экран — `<div class="screen" id="screen-xxx">`
 - Переключение через добавление/удаление CSS-класса `.active`
-- Анимации переходов через GSAP (fade + scale)
+- Анимации переходов через CSS (fade + scale)
 
 ### Игровое состояние
 - Объект `Game` хранит всё состояние (сетка, счёт, уровень, текущая фигура)
@@ -114,7 +114,7 @@ YandexSDK.showInterstitial(onClose);
 3. **localStorage может быть недоступен** — оборачивать в try/catch
 4. **Порядок скриптов в index.html важен** — зависимости загружаются первыми
 5. **Нет ES modules** — только глобальные объекты и var/function
-6. **GSAP подключается через CDN** — не копировать в проект
+6. **Не добавлять тяжёлые зависимости** — анимации делать через CSS/Web Animations API
 
 ## Требования модерации Яндекс Игр (обязательные правила)
 

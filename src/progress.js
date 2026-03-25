@@ -9,6 +9,12 @@ var Progress =
 			coins: 0,
 			highScore: 0,
 			gamesPlayed: 0,
+			bestMatch: 0,
+			bestStreak: 0,
+			totalRounds: 0,
+			difficulty: 'easy',
+			purchased: [],
+			equipped: '',
 		};
 	},
 
@@ -24,7 +30,6 @@ var Progress =
 			this._data = this._defaults();
 		}
 
-		// Мержим новые поля после обновления игры
 		var defs = this._defaults();
 		for (var k in defs)
 		{
@@ -64,5 +69,17 @@ var Progress =
 	{
 		if (score > this.get('highScore'))
 			this.set('highScore', score);
+	},
+
+	updateBestMatch: function (match)
+	{
+		if (match > this.get('bestMatch'))
+			this.set('bestMatch', match);
+	},
+
+	updateBestStreak: function (streak)
+	{
+		if (streak > this.get('bestStreak'))
+			this.set('bestStreak', streak);
 	},
 };
