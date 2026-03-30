@@ -662,23 +662,44 @@
 	function init()
 	{
 		Progress.load();
+		var appRoot = document.getElementById('app');
+		if (appRoot)
+			appRoot.style.pointerEvents = 'none';
 
 		YandexSDK.init(function ()
 		{
 			i18n.apply();
-			YandexSDK.notifyReady();
-		});
+			updateLangSwitchState();
 
-		i18n.apply();
-		showScreen('screen-menu');
-		initDifficultySelect();
-		bindButtons();
-		bindPicker();
-		bindPlatformEvents();
-		bindLangSwitch();
-		bindShop();
-		animateMenuOrb();
-		loadEquippedTheme();
+			showScreen('screen-menu');
+			initDifficultySelect();
+			bindButtons();
+			bindPicker();
+			bindPlatformEvents();
+			bindLangSwitch();
+			bindShop();
+			animateMenuOrb();
+			loadEquippedTheme();
+
+			// Игра доступна только после полной инициализации меню.
+			YandexSDK.notifyReady();
+			if (appRoot)
+				appRoot.style.pointerEvents = '';
+		});
+	}
+
+	function updateLangSwitchState()
+	{
+		var wrap = document.getElementById('lang-switch');
+		if (!wrap) return;
+
+		var btns = wrap.querySelectorAll('.lang-switch__btn');
+		for (var i = 0; i < btns.length; i++)
+		{
+			btns[i].classList.remove('is-active');
+			if (btns[i].getAttribute('data-lang') === i18n.lang())
+				btns[i].classList.add('is-active');
+		}
 	}
 
 	window.showScreen = showScreen;
